@@ -2,78 +2,65 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>ent333 | GraphQL Edition</title>
+    <title>ent333 | 최신 데이터 터미널</title>
     <style>
-        body { font-family: 'Pretendard', sans-serif; background: #0a0a0c; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: #16161a; padding: 30px; border-radius: 20px; width: 380px; box-shadow: 0 0 30px rgba(0,255,136,0.1); border: 1px solid #2d2d33; }
-        h1 { color: #00ff88; text-align: center; font-size: 26px; letter-spacing: -1px; }
-        input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 10px; border: 1px solid #333; background: #000; color: #00ff88; box-sizing: border-box; outline: none; }
-        button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #00ff88; color: #000; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #00cc6e; transform: scale(1.02); }
-        #res { margin-top: 25px; display: none; border-top: 1px solid #333; padding-top: 20px; }
-        .data-row { display: flex; justify-content: space-between; margin-bottom: 12px; }
-        .label { color: #888; }
-        .value { font-weight: bold; color: #fff; }
+        body { font-family: 'Pretendard', sans-serif; background: #050505; color: #00ff41; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .box { border: 1px solid #00ff41; padding: 30px; border-radius: 5px; width: 320px; box-shadow: 0 0 15px rgba(0,255,65,0.2); }
+        h1 { text-align: center; font-size: 22px; text-shadow: 0 0 10px #00ff41; }
+        .input-group { margin: 20px 0; }
+        input { width: 100%; padding: 10px; background: #000; border: 1px solid #00ff41; color: #00ff41; box-sizing: border-box; outline: none; }
+        button { width: 100%; padding: 10px; background: #00ff41; color: #000; border: none; font-weight: bold; cursor: pointer; }
+        #res { margin-top: 20px; padding: 15px; border-top: 1px dashed #00ff41; display: none; font-size: 14px; }
+        .line { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .label { color: #008f11; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>ent333 <span style="font-size: 12px; color: #555;">v2.0</span></h1>
-    <input type="text" id="targetId" placeholder="엔트리 아이디 입력">
-    <button onclick="queryEntry()">데이터 조회</button>
+<div class="box">
+    <h1>ENT333 SYSTEM</h1>
+    <div class="input-group">
+        <input type="text" id="targetId" placeholder="엔트리 아이디(ID) 입력">
+    </div>
+    <button onclick="access()">데이터 접속</button>
 
     <div id="res">
-        <div class="data-row"><span class="label">닉네임</span><span class="value" id="nick">-</span></div>
-        <div class="data-row"><span class="label">팔로워</span><span class="value" id="fol">-</span></div>
-        <div class="data-row"><span class="label">팔로잉</span><span class="value" id="ing">-</span></div>
-        <div class="data-row"><span class="label">아이디 고유값</span><span class="value" id="uid" style="font-size: 10px; color: #00ff88;">-</span></div>
+        <div class="line"><span class="label">NICKNAME</span> <span id="n">-</span></div>
+        <div class="line"><span class="label">FOLLOWERS</span> <span id="f">-</span></div>
+        <div class="line"><span class="label">FOLLOWING</span> <span id="i">-</span></div>
+        <div class="line"><span class="label">PROJECTS</span> <span id="p">-</span></div>
     </div>
 </div>
 
 <script>
-    async function queryEntry() {
+    async function access() {
         const id = document.getElementById('targetId').value;
-        if(!id) return alert("아이디를 입력하세요!");
-
+        if(!id) return;
+        
         const btn = document.querySelector('button');
-        btn.innerText = "GraphQL 통신 중...";
-
-        // 엔트리 GraphQL 쿼리문
-        const operations = {
-            query: `query getUser($username: String) {
-                user(username: $username) {
-                    nickname
-                    followerCount
-                    followingCount
-                    _id
-                }
-            }`,
-            variables: { username: id }
-        };
-
-        // 보안 우회를 위한 프록시 (GraphQL은 POST 요청이라 설정이 약간 다릅니다)
-        const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://playentry.org/graphql');
+        btn.innerText = "ACCESSING...";
+        
+        // 차단이 심한 allorigins 대신 직접적인 엔트리 API 우회 경로 사용
+        // 아래 주소는 엔트리 공식 API를 브라우저 보안 없이 쏴주는 무료 프록시 주소입니다.
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent('https://playentry.org/api/getUserByUsername/' + id)}`;
 
         try {
-            // 실제로는 POST로 쏴야 하지만, 프록시 제한 때문에 GET으로 감싸서 보내는 로직입니다.
-            const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://playentry.org/api/getUserByUsername/${id}`)}`);
-            const json = await response.json();
-            const data = JSON.parse(json.contents);
+            const response = await fetch(proxyUrl);
+            const data = await response.json();
 
-            if(!data || data.error) {
-                alert("유저를 찾을 수 없습니다.");
-            } else {
+            if(data && data.nickname) {
                 document.getElementById('res').style.display = 'block';
-                document.getElementById('nick').innerText = data.nickname;
-                document.getElementById('fol').innerText = data.followerCount.toLocaleString();
-                document.getElementById('ing').innerText = data.followingCount.toLocaleString();
-                document.getElementById('uid').innerText = data._id;
+                document.getElementById('n').innerText = data.nickname;
+                document.getElementById('f').innerText = data.followerCount;
+                document.getElementById('i').innerText = data.followingCount;
+                document.getElementById('p').innerText = data.projectCount;
+            } else {
+                alert("아이디를 찾을 수 없습니다.");
             }
         } catch (e) {
-            alert("연결 오류! 아이디를 확인하거나 잠시 후 다시 시도하세요.");
+            alert("연결 실패! 브라우저가 프록시를 차단했습니다. \n(F12 콘솔창의 오류를 확인해 보세요)");
         } finally {
-            btn.innerText = "데이터 조회";
+            btn.innerText = "데이터 접속";
         }
     }
 </script>
