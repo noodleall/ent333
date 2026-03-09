@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ent333 | 엔트리 유저 정보 조회</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        h1 { color: #3b82f6; font-size: 24px; margin-bottom: 20px; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none; }
+        button { background: #3b82f6; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #2563eb; }
+        #result { text-align: left; background: #f8fafc; padding: 15px; border-radius: 10px; display: none; }
+        .data-item { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .label { font-weight: bold; color: #64748b; font-size: 14px; }
+        .value { float: right; color: #1e293b; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ent333 데이터 조회</h1>
+    <div class="search-box">
+        <input type="text" id="username" placeholder="엔트리 아이디 입력">
+        <button onclick="searchUser()">조회</button>
+    </div>
+
+    <div id="result">
+        <div class="data-item"><span class="label">닉네임</span> <span class="value" id="res-nickname">-</span></div>
+        <div class="data-item"><span class="label">팔로워</span> <span class="value" id="res-follower">-</span></div>
+        <div class="data-item"><span class="label">팔로잉</span> <span class="value" id="res-following">-</span></div>
+        <div class="data-item"><span class="label">작품 수</span> <span class="value" id="res-projects">-</span></div>
+        <div class="data-item"><span class="label">게시글 수</span> <span class="value" id="res-posts">-</span></div>
+    </div>
+</div>
+
+<script>
+    async function searchUser() {
+        const username = document.getElementById('username').value;
+        if(!username) return alert("아이디를 입력하세요!");
+
+        try {
+            // 엔트리 API 호출 (실제 운영 시 프록시 서버가 필요할 수 있습니다)
+            const response = await fetch(`https://playentry.org/api/getUserByUsername/${username}`);
+            const data = await response.json();
+
+            if(data.error) {
+                alert("유저를 찾을 수 없습니다.");
+                return;
+            }
+
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('res-nickname').innerText = data.nickname;
+            document.getElementById('res-follower').innerText = data.followerCount;
+            document.getElementById('res-following').innerText = data.followingCount;
+            document.getElementById('res-projects').innerText = data.projectCount;
+            document.getElementById('res-posts').innerText = data.discussCount;
+
+        } catch (error) {
+            alert("데이터를 가져오는 중 오류가 발생했습니다.");
+            console.error(error);
+        }
+    }
+</script>
+
+</body>
+</html>
